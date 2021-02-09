@@ -1,7 +1,28 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from datetime import date
+import calendar
 import math
+evaldatestring = "2021-2-8"  # 評価日の文字列。
+inpatients = 0  # 評価日24時の在院患者数。
+admissions_discharges = 0  # 評価日までの入退院数。
+total_days = 0  # 評価日までののべ在院日数。
+stay_length = 21 # 達成すべき平均在院日数。
+
+
+evaldate = date.fromisoformat(evaldatestring)
+days = calendar.monthrange(evaldate.year, evaldate.month)[1] - evaldate.day + 1  # 残日数。
+
+admissions_per_unit = 1  # 単位あたりの入院患者数。
+discharges_per_unit = 1  # 単位あたりの退院患者数。
+
+
+for discharge_interval in range(1, days+1): # 退院間隔
+	for admission_interval in range(1, days+1):  # 入院間隔
+
+
+
 
 pnk = 0  # 当日の入院患者数。
 ab = 0  # 前日までの入退院数合計。
