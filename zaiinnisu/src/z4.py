@@ -19,23 +19,24 @@ tables = []  # 表のリスト。
 for c in range(total_beds*2):  # cはdummy。
 	admissions_per_unit = 1  # 単位あたりの入院患者数。
 	discharges_per_unit = 1  # 単位あたりの退院患者数。
-	rows = [(f"入院{admissions_per_unit}人ずつ退院{discharges_per_unit}人ずつの場合 行: 入院 列: 退院  平均在院日数(全例転棟または1日入院の場合の平均在院日数)月末入院数",),
+	rows = [(f"入院{admissions_per_unit}人ずつ退院{discharges_per_unit}人ずつの場合 行: 退院 列: 入院  平均在院日数と月末入院数()内は全例転棟または1日入院の場合",),
 			("", *[f"{i}日間隔" for i in range(1, ds)])]  # 行のリスト。	
-	for admission_interval in range(1, ds): # 入院間隔。行方向に展開。毎日、2日ごと、3日ごと、、、
-		for discharge_interval in range(1, ds):  # 退院間隔。列方向に展開。毎日、2日ごと、3日ごと、、、
+	for discharge_interval in range(1, ds):  # 退院間隔。列方向に展開。毎日、2日ごと、3日ごと、、、
+		for admission_interval in range(1, ds): # 入院間隔。行方向に展開。毎日、2日ごと、3日ごと、、、		
 			cols = [f"{discharge_interval}日間隔"]  # １行あたりの列のリスト。
 			inpatients = []  # １日あたりの入院患者数のリスト。
 			for d in range(1, ds):  # 経過日数
-				inpatients.append(admissions_per_unit*math.floor(d/admission_interval) - discharges_per_unit*math.floor(d/discharge_interval))  # １日患者数を取得。			
+				inpatients.append(admissions_per_unit*int(d/admission_interval) - discharges_per_unit*int(d/discharge_interval))  # １日患者数を取得。			
 			if init_inpatients+min(inpatients)<0:  # 入院患者数合計が負になるときは結果なし。
 				cols.append("")
 			else:  # 実現可能なとき。
-				new_admissions = admissions_per_unit*math.floor(days/admission_interval)  # 新規入院患者数。
-				new_dsicharges = discharges_per_unit*math.floor(days/discharge_interval)  # 新規退院患者数。
-				estimated_stay = "" if (ave:=(total_days+sum(inpatients))*2/(admissions_discharges+new_admissions+new_dsicharges))>stay_length_limit or ave==0 else ave  # 予測平均在院日数を取得。変動範囲上限を超えているときや0のときは空文字。
-				estimated_stay2 = "" if (ave:= (total_days+sum(inpatients)+new_dsicharges)*2/(admissions_discharges+new_admissions+new_dsicharges))>stay_length_limit or ave==0 else ave   # 予測平均在院日数を取得(転棟)。転棟は転棟日ものべ日数に含まれる。
+				new_dsicharges = discharges_per_unit*int(days/discharge_interval)  # 予測退院患者数。
+				new_admissions_discharges = admissions_discharges + admissions_per_unit*int(days/admission_interval) + new_dsicharges  # 予測新退院数。
+				new_total_days = total_days+sum(inpatients)  # 予測のべ在院日数。
+				estimated_stay = "" if (ave:= math.ceil(new_total_days*2/new_admissions_discharges))>stay_length_limit or ave==0 else ave  # 予測平均在院日数を取得。変動範囲上限を超えているときや0のときは空文字。
+				estimated_stay2 = "" if (ave:= math.ceil((new_total_days+new_dsicharges)*2/new_admissions_discharges))>stay_length_limit or ave==0 else ave   # 予測平均在院日数を取得(転棟)。転棟は転棟日ものべ日数に含まれる。
 				if any((estimated_stay, estimated_stay2)):
-					cols.append(f"{estimated_stay}({estimated_stay2}){inpatients[-1]}")  # 予測平均在院日数(転棟時または全例1日入院)最終入院患者数。
+					cols.append(f"{estimated_stay}({estimated_stay2}){inpatients[-1]}")  # 予測平均在院日数(全例転棟時または1日入院)最終入院患者数。
 				else:
 					cols.append("")
 			if any(cols[1:]):
@@ -56,7 +57,9 @@ for c in range(total_beds*2):  # cはdummy。
 		discharges_per_unit += 1 
 # 表の出力。
 with open("output.csv", "a") as f:
-	txt = "\n".join(f"{i}" for i in chain.from_iterable(tables))
+	print(tables)
+	txt = "\n".join(f"{i}" for i in chain(tables))
+	print(txt)
 	f.write(f"""\
 評価日: {evaldatestring}	
 評価日24時の在院患者数: {init_inpatients}
