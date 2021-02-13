@@ -10,7 +10,9 @@ admissions_discharges = 0  # 評価日までの入退院数。
 total_days = 0  # 評価日までののべ在院日数。
 stay_length = 21 # 達成すべき平均在院日数。
 total_beds = 64  # 病床数。
+table_count = 3  # 出力する表の数。
 # 表の作成。
+table_count -= 1
 evaldate = date.fromisoformat(evaldatestring)  # 評価日のdateオブジェクト。
 days = calendar.monthrange(evaldate.year, evaldate.month)[1] - evaldate.day  # 残日数。
 ds = days + 1  # range stopに使用。
@@ -28,7 +30,7 @@ for c in range(total_beds*2):  # cはdummy。
 			inpatients = []  # １日あたりの入院患者数のリスト。
 			for d in range(1, ds):  # 経過日数
 				p = init_inpatients + admissions_per_unit*int(d/admission_interval) - discharges_per_unit*int(d/discharge_interval)  # １日患者数を取得。初期値+累積入院数-累積退院数。		
-				if p<0:  # 入院患者数が負になる日がある場合は結果なし。
+				if p<0 or p>total_beds:  # 入院患者数が負かベッド数以上になる日がある場合は結果なし。
 					cols.append("")
 					break
 				else:
@@ -55,7 +57,7 @@ for c in range(total_beds*2):  # cはdummy。
 		tablerows += rows
 		tablerows.append("")  # 空行を最後に追加。
 		tables.append("\n".join(tablerows))
-		if len(tables)>2:  # 表が3個出力されているとき。
+		if len(tables)>table_count:  # 表が3個出力されているとき。
 			break
 	if admissions_per_unit<discharges_per_unit:  # 単位あたりの人数を退院の方から増やす。
 		admissions_per_unit += 1
