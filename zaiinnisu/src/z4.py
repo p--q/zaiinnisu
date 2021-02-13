@@ -10,7 +10,7 @@ admissions_discharges = 0  # 評価日までの入退院数。
 total_days = 0  # 評価日までののべ在院日数。
 stay_length = 21 # 達成すべき平均在院日数。
 total_beds = 64  # 病床数。
-table_count = 3  # 出力する表の数。
+table_count = 4  # 出力する表の数。
 # 表の作成。
 table_count -= 1
 evaldate = date.fromisoformat(evaldatestring)  # 評価日のdateオブジェクト。
