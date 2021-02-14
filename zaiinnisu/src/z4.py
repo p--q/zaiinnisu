@@ -21,7 +21,7 @@ tables = []  # 表のリスト。
 headerrow = "入院\退院",*[f"{i}日間隔" for i in range(1, ds)]  # 表のヘッダー行のタプル。
 admissions_per_unit = 1  # 単位あたりの入院患者数。
 discharges_per_unit = 1  # 単位あたりの退院患者数。
-for c in range(total_beds*2):  # cはdummy。
+while True:
 	rows = []  # 行のリスト。
 	colelms = []  # 列の要素数のリスト。列ヘッダーも含む。
 	for admission_interval in range(1, ds): # 入院間隔。行方向に展開。毎日、2日ごと、3日ごと、、、		
@@ -59,10 +59,12 @@ for c in range(total_beds*2):  # cはdummy。
 		tables.append("\n".join(tablerows))
 		if len(tables)>table_count:  # 表が3個出力されているとき。
 			break
-	if admissions_per_unit<discharges_per_unit:  # 単位あたりの人数を退院の方から増やす。
-		admissions_per_unit += 1
+	if admissions_per_unit<discharges_per_unit:  # 単位あたりの人数を退院の方から増やす。ベッド数以上の入退院数のときは終了。
+		if (admissions_per_unit:= admissions_per_unit+1)>total_beds:  
+			break
 	else:
-		discharges_per_unit += 1 
+		if (discharges_per_unit:= discharges_per_unit+1)>total_beds:
+			break		
 # 表の出力。
 with open("output.csv", "w") as f:  # ファイルを開く。
 	tabletxt = "\n".join(tables)
